@@ -8,99 +8,54 @@ namespace ReflectionPR1
     {
         static void Main()
         {
-            string libraryPath = "ReflectionLibrary.dll";
+            const string libraryFileName = "ReflectionLibrary.dll";
 
-            Assembly assembly = Assembly.LoadFrom(libraryPath);
-
-            Type[] types = assembly.GetTypes();
-
-            var userTypes = types.Where(t => t.Namespace == "ReflectionLibrary" && !t.Name.EndsWith("Attribute"));
-
-            Console.WriteLine("Список классов в библиотеке:");
-            foreach (Type classType in userTypes)
+            Assembly assembly;
+            try
             {
-                Console.WriteLine($"- {classType.Name}");
+                assembly = BuilderLoader.LoadLibrary(libraryFileName);
             }
-
-            Console.WriteLine("Введите имя класса:");
-            string? className = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(className))
+            catch (FileNotFoundException ex)
             {
-                Console.WriteLine("Имя класса не может быть пустым.");
+                Console.WriteLine($"Ошибка загрузки библиотеки: {ex.Message}");
+                return;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Неожиданная ошибка: {ex.Message}");
                 return;
             }
 
-            Type? type = assembly.GetType($"ReflectionLibrary.{className}");
-            if (type == null)
+            bool exit = false;
+            while (!exit)
             {
-                Console.WriteLine("Класс не найден.");
-                return;
-            }
+                Console.WriteLine("\nВыберите задание:");
+                Console.WriteLine("1. Задание 1. Инвокатор методов");
+                Console.WriteLine("2. Задание 2. Вывести список классов и их элементов");
+                Console.WriteLine("3. Задание 3. Вывести информациию об объекте");
+                Console.WriteLine("4. Выход");
+                Console.Write("Ваш выбор: ");
+                string? choice = Console.ReadLine();
+                Console.WriteLine();
 
-            Console.WriteLine("Введите имя метода:");
-            string? methodName = Console.ReadLine();
-            if (string.IsNullOrWhiteSpace(methodName))
-            {
-                Console.WriteLine("Имя метода не может быть пустым.");
-                return;
-            }
-
-            MethodInfo? method = type.GetMethod(methodName);
-            if (method == null)
-            {
-                Console.WriteLine("Метод не найден.");
-                return;
-            }
-
-            ParameterInfo[] parameters = method.GetParameters();
-            object[] args = new object[parameters.Length];
-
-            for (int i = 0; i < parameters.Length; i++)
-            {
-                Console.WriteLine($"Введите аргумент {parameters[i].Name} ({parameters[i].ParameterType}):");
-                string? input = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(input))
+                switch (choice)
                 {
-                    Console.WriteLine("Аргумент не может быть пустым.");
-                    return;
+                    case "1":
+                        MethodInvocation.InvokeMethodFromUserInput(assembly);
+                        break;
+                    case "2":
+                        InformationOutput.ShowClassesAndProperties(assembly);
+                        break;
+                    case "3":
+                        ObjectCreator.CreateAndPrintObject(assembly);
+                        break;
+                    case "4":
+                        exit = true;
+                        break;
+                    default:
+                        Console.WriteLine("Вы вправе распоряжаться только цифрами от 1 до 4. Попробуйте снова, lol.");
+                        break;
                 }
-                try
-                {
-                    if (parameters[i].ParameterType.IsEnum)
-                    {
-                        args[i] = Enum.Parse(parameters[i].ParameterType, input);
-                    }
-                    else
-                    {
-                        args[i] = Convert.ChangeType(input, parameters[i].ParameterType);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Ошибка преобразования аргумента: {ex.Message}");
-                    return;
-                }
-            }
-
-            object? instance = null;
-            if (!method.IsStatic)
-            {
-                instance = Activator.CreateInstance(type);
-                if (instance == null)
-                {
-                    Console.WriteLine("Не удалось создать экземпляр класса.");
-                    return;
-                }
-            }
-
-            object? result = method.Invoke(instance, args);
-            if (result != null)
-            {
-                Console.WriteLine("Результат выполнения метода: " + result);
-            }
-            else
-            {
-                Console.WriteLine("Метод выполнен успешно, но не вернул результат.");
             }
         }
     }
