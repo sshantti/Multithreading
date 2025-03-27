@@ -7,45 +7,47 @@ using System.Threading.Tasks;
 
 namespace ReflectionPR1
 {
-    public static class ObjectCreator
+    public class ObjectCreator
     {
-        public static void CreateAndPrintObject(Assembly assembly)
+        private const string CreateMethodName = "Create";
+        private const string PrintObjectMethodName = "PrintObject";
+        public void CreateAndPrintObject(Assembly assembly)
         {
-            Console.WriteLine("Введите имя класса:");
+            Console.WriteLine("Enter the class name:");
             string? className = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(className))
             {
-                Console.WriteLine("Зачем козе баян, необходимо ввести имя класса");
+                Console.WriteLine("You need to enter the class name");
                 return;
             }
 
             Type? selectedType = assembly.GetType($"ReflectionLibrary.{className}");
             if (selectedType == null)
             {
-                Console.WriteLine("Класс не найден");
+                Console.WriteLine("Class not found");
                 return;
             }
 
-            MethodInfo? createMethod = selectedType.GetMethod("Create");
+            MethodInfo? createMethod = selectedType.GetMethod(CreateMethodName);
             if (createMethod == null)
             {
-                Console.WriteLine("Метод Create не найден");
+                Console.WriteLine($"Method {CreateMethodName} not found");
                 return;
             }
 
-            object[] args = GetMethodArguments(createMethod);
+            object[] args = Arguments.GetMethodArguments(createMethod);
             object? instance = createMethod.Invoke(null, args);
 
             if (instance == null)
             {
-                Console.WriteLine("Не получилось создать объект");
+                Console.WriteLine("Failed to create object");
                 return;
             }
 
-            MethodInfo? printMethod = selectedType.GetMethod("PrintObject");
+            MethodInfo? printMethod = selectedType.GetMethod(PrintObjectMethodName);
             if (printMethod == null)
             {
-                Console.WriteLine("Метод PrintObject не найден");
+                Console.WriteLine($"Method {PrintObjectMethodName} not found");
                 return;
             }
 
@@ -55,42 +57,8 @@ namespace ReflectionPR1
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка вызова метода PrintObject: {ex.Message}");
+                Console.WriteLine($"Method invocation error: {ex.Message}");
             }
-        }
-
-        private static object[] GetMethodArguments(MethodInfo method)
-        {
-            ParameterInfo[] parameters = method.GetParameters();
-            object[] args = new object[parameters.Length];
-
-            for (int i = 0; i < parameters.Length; i++)
-            {
-                Console.WriteLine($"Введите значение для {parameters[i].Name}:");
-                string? input = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(input))
-                {
-                    throw new ArgumentException("Зачем козе баян, необходимо ввести аргумент");
-                }
-
-                try
-                {
-                    if (parameters[i].ParameterType.IsEnum)
-                    {
-                        args[i] = Enum.Parse(parameters[i].ParameterType, input);
-                    }
-                    else
-                    {
-                        args[i] = Convert.ChangeType(input, parameters[i].ParameterType);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new ArgumentException($"Ошибка преобразования аргумента: {ex.Message}");
-                }
-            }
-
-            return args;
         }
     }
 }

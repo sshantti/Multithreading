@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace ReflectionPR1
 {
-    public static class InformationOutput
+    public class InformationOutput
     {
         public static void ShowClassesAndProperties(Assembly assembly)
         {
             Type[] types = assembly.GetTypes();
             var userTypes = types.Where(t => t.Namespace == "ReflectionLibrary" && !t.Name.EndsWith("Attribute"));
 
-            Console.WriteLine("Список классов:");
+            Console.WriteLine("Class List:");
             foreach (Type classType in userTypes)
             {
                 Console.WriteLine($"- {classType.Name}");

@@ -7,41 +7,51 @@ using System.Threading.Tasks;
 
 namespace ReflectionPR1
 {
-    public static class MethodInvocation
+    public class MethodInvocation
     {
+        private const string PrintObjectMethodName = "PrintObject";
+        private const string CreateMethodName = "Create";
+
         public static void InvokeMethodFromUserInput(Assembly assembly)
         {
-            Console.WriteLine("Введите имя класса:");
+            Console.WriteLine("Enter the class name:");
             string? className = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(className))
             {
-                Console.WriteLine("Зачем козе баян, необходимо ввести имя класса");
+                Console.WriteLine("You need to enter the class name");
                 return;
             }
 
             Type? type = assembly.GetType($"ReflectionLibrary.{className}");
             if (type == null)
             {
-                Console.WriteLine("Класс не найден");
+                Console.WriteLine("Class not found");
                 return;
             }
 
-            Console.WriteLine("Введите имя метода:");
+            Console.WriteLine("Enter the method name:");
             string? methodName = Console.ReadLine();
             if (string.IsNullOrWhiteSpace(methodName))
             {
-                Console.WriteLine("Зачем козе баян, необходимо ввести имя метода");
+                Console.WriteLine("You need to enter the method name");
                 return;
             }
 
-            MethodInfo? method = type.GetMethod(methodName);
+            MethodInfo? method;
+            if (methodName == PrintObjectMethodName)
+                method = type.GetMethod(PrintObjectMethodName);
+            else if (methodName == CreateMethodName)
+                method = type.GetMethod(CreateMethodName);
+            else
+                method = type.GetMethod(methodName);
+
             if (method == null)
             {
-                Console.WriteLine("Метод не найден");
+                Console.WriteLine("Method not found");
                 return;
             }
 
-            object[] args = GetMethodArguments(method);
+            object[] args = Arguments.GetMethodArguments(method);
             object? instance = null;
 
             if (!method.IsStatic)
@@ -49,7 +59,7 @@ namespace ReflectionPR1
                 instance = Activator.CreateInstance(type);
                 if (instance == null)
                 {
-                    Console.WriteLine("Не получается создать экземпляр класса");
+                    Console.WriteLine("Cannot create an instance of the class");
                     return;
                 }
             }
@@ -59,51 +69,17 @@ namespace ReflectionPR1
                 object? result = method.Invoke(instance, args);
                 if (result != null)
                 {
-                    Console.WriteLine("Результат выполнения метода: " + result);
+                    Console.WriteLine("Result of the method execution: " + result);
                 }
                 else
                 {
-                    Console.WriteLine("Метод выполнен, но не вернул результат");
+                    Console.WriteLine("Method executed, but did not return a result");
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Ошибка при вызове метода: {ex.Message}");
+                Console.WriteLine($"Error when calling a method: {ex.Message}");
             }
-        }
-
-        private static object[] GetMethodArguments(MethodInfo method)
-        {
-            ParameterInfo[] parameters = method.GetParameters();
-            object[] args = new object[parameters.Length];
-
-            for (int i = 0; i < parameters.Length; i++)
-            {
-                Console.WriteLine($"Введите аргумент {parameters[i].Name}:");
-                string? input = Console.ReadLine();
-                if (string.IsNullOrWhiteSpace(input))
-                {
-                    throw new ArgumentException("Зачем козе баян, необходимо ввести аргумент");
-                }
-
-                try
-                {
-                    if (parameters[i].ParameterType.IsEnum)
-                    {
-                        args[i] = Enum.Parse(parameters[i].ParameterType, input);
-                    }
-                    else
-                    {
-                        args[i] = Convert.ChangeType(input, parameters[i].ParameterType);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    throw new ArgumentException($"Ошибка преобразования аргумента: {ex.Message}");
-                }
-            }
-
-            return args;
         }
     }
 }

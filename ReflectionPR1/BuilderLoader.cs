@@ -14,7 +14,7 @@ namespace ReflectionPR1
             string libraryPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, libraryFileName);
             if (!File.Exists(libraryPath))
             {
-                throw new FileNotFoundException($"Файл не найден (косяк на гитхабе, я почти ни при чем): {libraryPath}");
+                throw new FileNotFoundException($"File not found: {libraryPath}");
             }
             return Assembly.LoadFrom(libraryPath);
         }
