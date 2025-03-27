@@ -11,7 +11,7 @@ namespace ReflectionPR1
     {
         private const string CreateMethodName = "Create";
         private const string PrintObjectMethodName = "PrintObject";
-        public void CreateAndPrintObject(Assembly assembly)
+        public static void CreateAndPrintObject(Assembly assembly)
         {
             Console.WriteLine("Enter the class name:");
             string? className = Console.ReadLine();

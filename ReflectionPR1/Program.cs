@@ -26,8 +26,6 @@ namespace ReflectionPR1
                 return;
             }
 
-            var objectCreator = new ObjectCreator();
-
             bool exit = false;
             while (!exit)
             {
@@ -49,7 +47,7 @@ namespace ReflectionPR1
                         InformationOutput.ShowClassesAndProperties(assembly);
                         break;
                     case "3":
-                        objectCreator.CreateAndPrintObject(assembly);
+                        ObjectCreator.CreateAndPrintObject(assembly);
                         break;
                     case "4":
                         exit = true;
