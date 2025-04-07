@@ -4,7 +4,6 @@ Lab1/
 **/[Dd]ebug/
 **/[Rr]elease/
 *.dll
-*.pdb
 *.exe
 
 ## Ignore Visual Studio temporary files, build results, and
