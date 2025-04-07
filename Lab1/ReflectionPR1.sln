@@ -10,6 +10,7 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Serialization_pr2", "..\Lab2\Serialization_pr2\Serialization_pr2.csproj", "{12E5C795-9D5F-4D81-885E-2F188545BB7F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerializableLibrary", "SerializableLibrary\SerializableLibrary.csproj", "{2FBE1037-04EF-4921-AA90-91272489F636}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReflectionLibrary", "ReflectionLibrary\ReflectionLibrary.csproj", "{39BFF865-2238-41EE-AEB0-EC2F7BC2E53C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
