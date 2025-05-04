@@ -11,12 +11,17 @@ namespace TPL
 {
     public class ClassMerger
     {
+        // Объединение данных из двух XML-файлов в один output файл.
         private readonly string _filePath1;
         private readonly string _filePath2;
         private readonly string _outputFilePath;
         private readonly TaskFactory _taskFactory;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
+        // Инициализируется новый экземпляр класса.
+        /// "filePath1" - Путь к первому input файлу
+        /// "filePath2" - Путь ко второму input файлу.
+        /// "outputFilePath" - Путь к объединенному output файлу.
         public ClassMerger(string filePath1, string filePath2, string outputFilePath)
         {
             _filePath1 = filePath1;
@@ -26,13 +31,16 @@ namespace TPL
             _taskFactory = new TaskFactory(_cts.Token);
         }
 
+        // Асинхронно объединяются данные из 2 файлов в 1 output файл.
         public async Task MergeFilesAsync()
         {
             try
             {
+                // Одновременное чтение данных.
                 var data1 = await ReadFileAsync(_filePath1);
                 var data2 = await ReadFileAsync(_filePath2);
 
+                // Запись объединенных данных в output файл.
                 await using var writer = new StreamWriter(_outputFilePath);
 
                 foreach (var item in data1)
@@ -48,6 +56,7 @@ namespace TPL
             }
         }
 
+        // Считываются и десериализуются объекты из файла.
         private async Task<List<object>> ReadFileAsync(string filePath)
         {
             try
@@ -63,6 +72,7 @@ namespace TPL
             }
         }
 
+        // Преобразует объект в его строковое представление.
         private static string ObjectToString(object obj) => obj switch
         {
             Plane p => string.Format(Constants.PlaneFormat, p.Model, p.PlaneCode, p.EngineType),
@@ -70,6 +80,7 @@ namespace TPL
             _ => string.Empty
         };
 
+        // Отменяет текущие операции слияния
         public void CancelOperation() => _cts.Cancel();
     }
 }

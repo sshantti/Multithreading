@@ -1,5 +1,6 @@
 ﻿namespace TPL
 {
+    // Содержит константы приложения и строки формата.
     public static class Constants
     {
         public const string File1Path = "file1.xml";

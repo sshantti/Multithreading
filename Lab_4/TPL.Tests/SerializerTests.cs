@@ -21,6 +21,7 @@ namespace TPL.Tests
         }
 
         [TestMethod]
+        // Проверяет создание файлов при сериализации.
         public async Task SerializeInParallelAsync_ShouldCreateFiles()
         {
             var objects = new List<object> { Plane.Create("SN1", "Model1", "PC1", EngineType.Electrical) };
@@ -34,6 +35,7 @@ namespace TPL.Tests
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
+        // Проверяет валидацию параметров конструктора Serializer.
         public void Constructor_ShouldThrowOnNullParameters()
         {
             var serializer = new Serializer(null!, "valid.xml", new List<object>(), new List<object>());

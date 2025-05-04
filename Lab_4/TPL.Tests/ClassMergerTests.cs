@@ -14,6 +14,7 @@ namespace TPL.Tests
         private const string MergedFile = "merged_test.txt";
 
         [TestInitialize]
+        // Создает тестовые файлы.
         public void Initialize()
         {
             File.WriteAllText(TestFile1, @"<?xml version=""1.0""?><ArrayOfObject><Plane><Model>Test</Model></Plane></ArrayOfObject>");
@@ -21,6 +22,7 @@ namespace TPL.Tests
         }
 
         [TestCleanup]
+        // Очищает ресурсы после тестов.
         public void Cleanup()
         {
             File.Delete(TestFile1);
@@ -29,6 +31,7 @@ namespace TPL.Tests
         }
 
         [TestMethod]
+        // Проверяет, что метод MergeFilesAsync создает файл.
         public async Task MergeFilesAsync_ShouldCreateMergedFile()
         {
             var merger = new ClassMerger(TestFile1, TestFile2, MergedFile);
@@ -37,6 +40,7 @@ namespace TPL.Tests
         }
 
         [TestMethod]
+        // Проверяет корректность содержимого объединенного файла.
         public async Task MergeFilesAsync_ShouldCreateValidFile()
         {
             var merger = new ClassMerger(TestFile1, TestFile2, MergedFile);
@@ -49,6 +53,7 @@ namespace TPL.Tests
 
         [TestMethod]
         [ExpectedException(typeof(FileNotFoundException))]
+        // Проверяет обработку отсутствующих файлов.
         public async Task ReadFileAsync_ShouldThrowOnMissingFile()
         {
             var merger = new ClassMerger("missing.xml", "missing.xml", MergedFile);

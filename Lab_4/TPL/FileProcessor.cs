@@ -9,6 +9,7 @@ using Library;
 
 namespace TPL
 {
+    // Обработка файловых операций
     public class FileProcessor
     {
         private readonly SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
@@ -18,6 +19,7 @@ namespace TPL
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
         private readonly TaskFactory _taskFactory;
 
+        // Инициализирует файловый процессор с настройками задач.
         public FileProcessor(string file1, string file2, string mergedFile)
         {
             _file1 = file1;
@@ -28,7 +30,7 @@ namespace TPL
                 TaskContinuationOptions.DenyChildAttach);
         }
 
-        // Задание 1
+        // Задание 1. Параллельно генерируется тестовые данные и записываются в файлы.
         public async Task GenerateAndWriteFilesAsync()
         {
             var objects1 = GenerateObjects(0, 10);
@@ -46,7 +48,7 @@ namespace TPL
                 _cts.Token.ThrowIfCancellationRequested());
         }
 
-        // Задание 2
+        // Задание 2. Выполняется слияние данных из 2 файлов в 1.
 
         public async Task MergeFilesAsync()
         {
@@ -68,7 +70,7 @@ namespace TPL
             }
         }
 
-        // Задание 3
+        // Задание 3.
         public async Task ReadAndPrintMergedFileAsync()
         {
             var data = await ReadFileAsync(_mergedFile, _cts.Token);
@@ -87,6 +89,7 @@ namespace TPL
             Console.WriteLine("All print tasks completed");
         }
 
+        // Создается список тестовых объектов.
         private List<object> GenerateObjects(int start, int end)
         {
             var list = new List<object>();
@@ -100,6 +103,7 @@ namespace TPL
             return list;
         }
 
+        // Асинхронно записываются сериализованные данные в файл.
         private async Task SerializeObjectsAsync(List<object> objects, string path, CancellationToken token)
         {
             await using var stream = new FileStream(path, FileMode.Create);
@@ -109,6 +113,7 @@ namespace TPL
             await stream.WriteAsync(bytes, 0, bytes.Length, token);
         }
 
+        // Преобразует список объектов в XML-строку.
         private string SerializeObject(XmlSerializer serializer, List<object> objects)
         {
             using var writer = new StringWriter();
@@ -116,6 +121,7 @@ namespace TPL
             return writer.ToString();
         }
 
+        // Десериализует данные из XML-файла.
         private async Task<List<object>> ReadFileAsync(string path, CancellationToken token)
         {
             await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read, 4096, true);
@@ -129,6 +135,7 @@ namespace TPL
             }, token);
         }
 
+        // Асинхронно записывается объект в файл с синхронизацией доступа.
         private async Task WriteToFileAsync(StreamWriter writer, object item, CancellationToken token)
         {
             await _semaphore.WaitAsync(token);
@@ -142,11 +149,13 @@ namespace TPL
             }
         }
 
+        // Выводит информацию об объекте в консоль.
         private async Task PrintObjectAsync(object obj, int index, CancellationToken token)
         {
             await Console.Out.WriteLineAsync($"Item {index}: {ObjectToString(obj)}");
         }
 
+        // Преобразуется объект в строковое представление.
         private string ObjectToString(object obj) => obj switch
         {
             Plane p => string.Format(Constants.PlaneFormat, p.Model, p.PlaneCode, p.EngineType),

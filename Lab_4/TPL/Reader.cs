@@ -7,11 +7,14 @@ using System.Threading.Tasks;
 
 namespace TPL
 {
+    // Чтение файлов с замером времени.
     public class Reader
     {
         private readonly string _filePath;
         private readonly TaskFactory _taskFactory;
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+
+        // Инициализируется экземпляр класса для чтения файлов.
         public Reader(string filePath)
         {
             if (!File.Exists(filePath))
@@ -22,6 +25,8 @@ namespace TPL
                 TaskCreationOptions.LongRunning,
                 TaskContinuationOptions.None);
         }
+
+        // Чтение файла с использованием 10 потоков.
         public async Task ReadFileWithTenThreadsAsync()
         {
             var stopwatch = Stopwatch.StartNew();
@@ -39,12 +44,14 @@ namespace TPL
             Console.WriteLine(string.Format(Constants.TimeTakenFormat, stopwatch.ElapsedMilliseconds));
         }
 
+        // Читает файл в 1 потоке.
         public async Task ReadFileSingleThreadAsync()
         {
             var content = await File.ReadAllTextAsync(_filePath);
             Console.WriteLine(content);
         }
 
+        // Читает файл, используя 2 потока.
         public async Task ReadFileTwoThreadsAsync()
         {
             var stopwatch = Stopwatch.StartNew();
@@ -60,6 +67,7 @@ namespace TPL
             Console.WriteLine(string.Format(Constants.TimeTakenFormat, stopwatch.ElapsedMilliseconds));
         }
 
+        // Читение части файла в заданном диапазоне.
         private string ReadFilePart(double startRatio, double endRatio)
         {
             using var stream = new FileStream(

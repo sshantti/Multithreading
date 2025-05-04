@@ -7,6 +7,7 @@ using Library;
 
 namespace TPL
 {
+    // Выполняет сериализацию объектов в XML-файлы.
     public class Serializer
     {
         private readonly string _filePath1;
@@ -14,6 +15,7 @@ namespace TPL
         private readonly List<object> _objects1;
         private readonly List<object> _objects2;
 
+        // Конструктор класса для сериализации данных
         public Serializer(string filePath1, string filePath2, List<object> objects1, List<object> objects2)
         {
             _filePath1 = filePath1 ?? throw new ArgumentNullException(nameof(filePath1));
@@ -22,6 +24,7 @@ namespace TPL
             _objects2 = objects2 ?? throw new ArgumentNullException(nameof(objects2));
         }
 
+        // Параллельная запись данных в два файла.
         public async Task SerializeInParallelAsync()
         {
             Task task1 = Task.Run(() => SerializeObjects(_objects1, _filePath1));
@@ -29,6 +32,7 @@ namespace TPL
             await Task.WhenAll(task1, task2);
         }
 
+        // Сериализуются объекты в XML-формат.
         private void SerializeObjects(List<object> objects, string filePath)
         {
             if (objects == null) throw new ArgumentNullException(nameof(objects));
