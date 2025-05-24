@@ -24,7 +24,7 @@ namespace TPL
             _objects2 = objects2 ?? throw new ArgumentNullException(nameof(objects2));
         }
 
-        // Параллельная запись данных в два файла.
+        // Параллельно сериализует данные в XML-файлы.
         public async Task SerializeInParallelAsync()
         {
             Task task1 = Task.Run(() => SerializeObjects(_objects1, _filePath1));
@@ -32,7 +32,7 @@ namespace TPL
             await Task.WhenAll(task1, task2);
         }
 
-        // Сериализуются объекты в XML-формат.
+        // Сериализует коллекцию объектов в XML и записывает в файл.
         private void SerializeObjects(List<object> objects, string filePath)
         {
             if (objects == null) throw new ArgumentNullException(nameof(objects));

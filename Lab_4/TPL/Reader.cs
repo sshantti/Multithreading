@@ -12,7 +12,7 @@ namespace TPL
     {
         private readonly string _filePath;
         private readonly TaskFactory _taskFactory;
-        private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _cts = new();
 
         // Инициализируется экземпляр класса для чтения файлов.
         public Reader(string filePath)
@@ -27,14 +27,18 @@ namespace TPL
         }
 
         // Чтение файла с использованием 10 потоков.
+        //- Каждая часть обрабатывается отдельной задачей.
+        // - Использует константу TenPartsCount для определения количества частей.
         public async Task ReadFileWithTenThreadsAsync()
         {
             var stopwatch = Stopwatch.StartNew();
-            var tasks = new Task<string>[10];
-            for (int i = 0; i < 10; i++)
+            var tasks = new Task<string>[Constants.TenPartsCount];
+            double partSize = 1.0 / Constants.TenPartsCount;
+
+            for (int i = 0; i < Constants.TenPartsCount; i++)
             {
-                double start = i * 0.1;
-                double end = (i + 1) * 0.1;
+                double start = i * partSize;
+                double end = (i + 1) * partSize;
                 tasks[i] = _taskFactory.StartNew(() => ReadFilePart(start, end));
             }
 
@@ -44,22 +48,28 @@ namespace TPL
             Console.WriteLine(string.Format(Constants.TimeTakenFormat, stopwatch.ElapsedMilliseconds));
         }
 
-        // Читает файл в 1 потоке.
+        // Читает весь файл в одном потоке.
+        // - Использует File.ReadAllTextAsync для асинхронного чтения.
         public async Task ReadFileSingleThreadAsync()
         {
             var content = await File.ReadAllTextAsync(_filePath);
             Console.WriteLine(content);
         }
 
-        // Читает файл, используя 2 потока.
+        // Читает файл, разделяя его на две части.
+        // - Первая половина и вторая половина файла обрабатываются параллельно.
         public async Task ReadFileTwoThreadsAsync()
         {
             var stopwatch = Stopwatch.StartNew();
-            var tasks = new[]
+            var tasks = new Task<string>[Constants.TwoPartsCount];
+            double partSize = 1.0 / Constants.TwoPartsCount;
+
+            for (int i = 0; i < Constants.TwoPartsCount; i++)
             {
-                _taskFactory.StartNew(() => ReadFilePart(0, 0.5)),
-                _taskFactory.StartNew(() => ReadFilePart(0.5, 1.0))
-            };
+                double start = i * partSize;
+                double end = (i + 1) * partSize;
+                tasks[i] = _taskFactory.StartNew(() => ReadFilePart(start, end));
+            }
 
             var results = await Task.WhenAll(tasks);
             Console.WriteLine(string.Concat(results));
@@ -67,7 +77,9 @@ namespace TPL
             Console.WriteLine(string.Format(Constants.TimeTakenFormat, stopwatch.ElapsedMilliseconds));
         }
 
-        // Читение части файла в заданном диапазоне.
+        // Читает часть файла в заданном диапазоне (от startRatio до endRatio).
+        // - FileOptions.SequentialScan: Указывает ОС, что файл читается последовательно.
+        // - FileShare.ReadWrite: Позволяет другим процессам читать и изменять файл.
         private string ReadFilePart(double startRatio, double endRatio)
         {
             using var stream = new FileStream(

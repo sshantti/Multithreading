@@ -16,5 +16,8 @@
         public const string Task3TwoThreads = "\nTask 3.2: Two-threaded read";
         public const string Task3TenThreads = "\nTask 3.3: Ten threads with semaphore";
         public const string TimeTakenFormat = "Time taken: {0} ms";
+        public const int TwoPartsCount = 2;
+        public const int TenPartsCount = 10;
+        public const int ChildCompanyDivisor = 3;
     }
 }

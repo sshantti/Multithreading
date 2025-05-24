@@ -31,7 +31,7 @@ namespace TPL.Tests
         }
 
         [TestMethod]
-        // Проверяет, что метод MergeFilesAsync создает файл.
+        // Проверяет, что MergeFilesAsync создает файл merged_test.txt 
         public async Task MergeFilesAsync_ShouldCreateMergedFile()
         {
             var merger = new ClassMerger(TestFile1, TestFile2, MergedFile);
@@ -41,6 +41,8 @@ namespace TPL.Tests
 
         [TestMethod]
         // Проверяет корректность содержимого объединенного файла.
+        // - Должны присутствовать записи из обоих входных файлов.
+        // - Формат записей должен соответствовать PlaneFormat и ManufacturerFormat.
         public async Task MergeFilesAsync_ShouldCreateValidFile()
         {
             var merger = new ClassMerger(TestFile1, TestFile2, MergedFile);

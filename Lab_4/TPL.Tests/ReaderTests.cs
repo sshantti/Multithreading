@@ -21,6 +21,7 @@ namespace TPL.Tests
             => File.Delete(TestFile);
 
         [TestMethod]
+        // Проверяет однопоточное чтение файла.
         public async Task ReadFileSingleThreadAsync_ShouldReadFile()
         {
             var reader = new Reader(TestFile);
@@ -29,6 +30,7 @@ namespace TPL.Tests
 
         [TestMethod]
         [ExpectedException(typeof(FileNotFoundException))]
+        // Проверяет, что конструктор выбрасывает исключение при отсутствии файла.
         public void Constructor_ShouldThrowOnMissingFile()
             => new Reader("missing.txt");
     }

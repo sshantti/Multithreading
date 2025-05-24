@@ -7,6 +7,7 @@ namespace TPL
 {
     class Program_pr4
     {
+        // Основное меню приложения.
         static async Task Main(string[] args)
         {
             bool exit = false;
@@ -40,6 +41,7 @@ namespace TPL
             }
         }
 
+        // Генерирует тестовые данные и вызывает сериализацию.
         static async Task ExecuteTask1()
         {
             try
@@ -61,6 +63,8 @@ namespace TPL
                 Console.WriteLine($"Ошибка: {ex.Message}");
             }
         }
+
+        // Выполняет слияние файлов через ClassMerger.
         static async Task ExecuteTask2()
         {
             try
@@ -82,6 +86,7 @@ namespace TPL
             }
         }
 
+        // Запускает три варианта чтения файла
         static async Task ExecuteTask3()
         {
             try
