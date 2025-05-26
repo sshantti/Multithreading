@@ -1,13 +1,9 @@
 ﻿using ClassLibrary;
-using Concurrency_pr5;
-using System;
 using System.Collections.Concurrent;
-using System.IO;
-using System.Reflection.Emit;
-using System.Threading.Tasks;
 
 namespace Concurrency_pr5
 {
+    // Координация всех этапов обработки данных.
     class Program
     {
         static async Task Main(string[] args)

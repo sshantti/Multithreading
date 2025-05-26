@@ -1,10 +1,9 @@
-﻿using System;
-
-namespace Concurrency_pr5
+﻿namespace Concurrency_pr5
 {
     // Класс для отображения прогресса в консоли
     public class ProgressBar : IProgress<int>
     {
+        private const int BarLength = 50;
         private readonly int _total;
         private int _current;
         private readonly object _lock = new();
@@ -19,7 +18,7 @@ namespace Concurrency_pr5
             {
                 Console.CursorLeft = 0;
                 var percent = (int)((double)_current / _total * 100);
-                Console.Write($"[{new string('#', percent / 2)}{new string(' ', 50 - percent / 2)}] {percent}%");
+                Console.Write($"[{new string('#', percent / 2)}{new string(' ', BarLength - percent / 2)}] {percent}%");
             }
         }
     }

@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
+﻿using ClassLibrary;
 using System.Xml.Serialization;
-using ClassLibrary;
 
 namespace Concurrency_pr5
 {
     public static class Generator
     {
+        private const int TotalFiles = 5;
+        private const int ObjectsPerFile = 10;
+
         // Генерация нескольких файлов
         public static async Task GenerateFilesAsync(string outputDirectory, IProgress<int>? progress = null)
         {
@@ -18,11 +17,14 @@ namespace Concurrency_pr5
                 var tasks = new List<Task>();
                 var rnd = new Random();
 
-                // Создаем 5 файлов
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < TotalFiles; i++)
                 {
                     var filePath = Path.Combine(outputDirectory, $"data_{i}.xml");
-                    tasks.Add(GenerateFileAsync(filePath, 10, rnd, progress));
+                    tasks.Add(GenerateFileAsync(
+                        filePath, 
+                        ObjectsPerFile, 
+                        rnd, 
+                        progress));
                 }
 
                 await Task.WhenAll(tasks);

@@ -10,6 +10,7 @@ namespace ClassLibrary
         Steam
     }
 
+    // Класс, представляющий данные
     [XmlRoot("Plane")]
     public class Plane
     {
@@ -25,6 +26,7 @@ namespace ClassLibrary
         [XmlElement("EngineType")]
         public EngineType EngineType { get; set; }
 
+        // Создает экземпляр.
         public static Plane Create(string serialNumber, string model, string planeCode, EngineType engineType)
         {
             return new Plane
@@ -35,13 +37,14 @@ namespace ClassLibrary
                 EngineType = engineType
             };
         }
-
+        // Выводит информацию
         public void PrintObject()
         {
-            Console.WriteLine($"Plane: SerialNumber={SerialNumber}, Model={Model}, PlaneCode={PlaneCode}, EngineType={EngineType}");
+            Console.WriteLine($"Plane: Model={Model}, PlaneCode={PlaneCode}, EngineType={EngineType}");
         }
     }
 
+    // Класс, представляющий данные
     [XmlRoot("Manufacturer")]
     public class Manufacturer
     {
@@ -54,6 +57,7 @@ namespace ClassLibrary
         [XmlElement("IsAChildCompany")]
         private bool IsAChildCompany { get; set; }
 
+        // Создает экземпляр.
         public static Manufacturer Create(string name, string address, bool isAChildCompany)
         {
             return new Manufacturer
@@ -63,7 +67,7 @@ namespace ClassLibrary
                 IsAChildCompany = isAChildCompany
             };
         }
-
+        // Выводит информацию.
         public void PrintObject()
         {
             Console.WriteLine($"Manufacturer: Name={Name}, Address={Address}, IsAChildCompany={IsAChildCompany}");

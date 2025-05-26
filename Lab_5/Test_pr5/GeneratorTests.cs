@@ -1,24 +1,23 @@
 ﻿using Xunit;
-using System.IO;
-using System.Threading.Tasks;
-using ClassLibrary;
 
 namespace Concurrency_pr5.Tests
 {
+    // Тестирование генерации файлов.
     public class GeneratorTests
     {
+        // Проверка генерации 5 файлов.
         [Fact]
         public async Task GenerateFilesAsync_CreatesFiveFiles()
         {
-            // Arrange
+            // Arrange: Создание временной директории.
             var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
 
             try
             {
-                // Act
+                // Act: Генерация файлов.
                 await Generator.GenerateFilesAsync(tempDir);
 
-                // Assert
+                // Assert: Проверка количества файлов.
                 var files = Directory.GetFiles(tempDir, "*.xml");
                 Assert.Equal(5, files.Length);
             }

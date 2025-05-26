@@ -4,12 +4,14 @@ using ClassLibrary;
 
 namespace Concurrency_pr5.Tests
 {
+    // Тестирование функциональности сортировки данных.
     public class DataProcessorTests
     {
+        // Проверка сортировки смешанных данных
         [Fact]
         public void SortData_SortsCorrectly()
         {
-            // Arrange
+            // Arrange: Подготовка тестовых данных
             var data = new ConcurrentDictionary<string, ConcurrentBag<object>>();
             var objects = new ConcurrentBag<object>
             {
@@ -20,10 +22,10 @@ namespace Concurrency_pr5.Tests
 
             var processor = new DataProcessor();
 
-            // Act
+            // Act: Вызов метода сортировки
             DataProcessor.SortData(data);
 
-            // Assert через публичные методы
+            // Assert: Проверка, что первым элементом стал самолет
             var firstItem = data["test"].First();
             Assert.IsType<Plane>(firstItem);
         }

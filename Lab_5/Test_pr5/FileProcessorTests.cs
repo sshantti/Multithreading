@@ -1,18 +1,17 @@
-﻿using Xunit;
-using System.IO;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using ClassLibrary;
+﻿using ClassLibrary;
 using System.Xml.Serialization;
+using Xunit;
 
 namespace Concurrency_pr5.Tests
 {
+    // Тестирование обработки файлов
     public class FileProcessorTests
     {
+        // Проверка чтения данных из файла
         [Fact]
         public async Task ProcessFilesAsync_ReadsValidData()
         {
-            // Arrange
+            // Arrange: Создание тестового файла
             var tempFile = Path.GetTempFileName();
             var progress = new ProgressBar(10);
             var plane = Plane.Create("SN123", "ModelX", "PC999", EngineType.Electrical);
@@ -28,10 +27,10 @@ namespace Concurrency_pr5.Tests
 
             var processor = new FileProcessor();
 
-            // Act
+            // Act: Обработка файла
             await processor.ProcessFilesAsync(new[] { tempFile }, progress);
 
-            // Assert
+            // Assert: Проверка наличия данных
             Assert.Single(processor.Data[Path.GetFileName(tempFile)]);
 
             // Cleanup

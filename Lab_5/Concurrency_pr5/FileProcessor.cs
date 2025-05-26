@@ -1,19 +1,15 @@
-﻿using System;
+﻿using ClassLibrary;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
 using System.Xml.Serialization;
-using ClassLibrary;
 
 namespace Concurrency_pr5
 {
+    // Чтение и обработка данных из XML-файлов.
     public class FileProcessor
     {
-        // Словарь: имя файла -> коллекция объектов
         public ConcurrentDictionary<string, ConcurrentBag<object>> Data { get; } = new();
 
-        // Асинхронная обработка нескольких файлов
+        // Асинхронная обработка нескольких файлов.
         public async Task ProcessFilesAsync(string[] filePaths, IProgress<int> progress)
         {
             try
@@ -28,7 +24,7 @@ namespace Concurrency_pr5
             }
         }
 
-        // Обработка одного файла: чтение и добавление в словарь
+        // Обработка одного файла: чтение и добавление в словарь.
         private async Task ProcessFileAsync(string filePath, IProgress<int>? progress)
         {
             try
@@ -36,7 +32,6 @@ namespace Concurrency_pr5
                 var objects = await ReadFileAsync(filePath);
                 Data[Path.GetFileName(filePath)] = new ConcurrentBag<object>(objects);
 
-                // Сообщаем прогресс по каждому объекту
                 foreach (var _ in objects)
                 {
                     progress?.Report(1);

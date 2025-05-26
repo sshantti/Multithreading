@@ -10,11 +10,9 @@ namespace Concurrency_pr5
         {
             try
             {
-                // Проходим по всем ключам
                 foreach (var key in data.Keys.ToArray())
                 {
-                    // Сортируем объекты: Plane по модели, Manufacturer по имени
-                    var sorted = data[key]
+                    var sorted = data[key] 
                         .OrderBy(o => o switch
                         {
                             Plane p => p.Model,
