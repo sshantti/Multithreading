@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.SqlClient;
-using System.Threading.Tasks;
+﻿using System.Data.SqlClient;
 
 namespace ADO.Net
 {
+    // Заполняет базу данных тестовыми данными.
     public class DataInserter
     {
+        // Асинхронно добавляет 30 производителей и 30 самолетов
         public async Task InsertDataAsync()
         {
             using var connection = new SqlConnection(Constants.ConnectionString);
             await connection.OpenAsync();
 
-            for (int i = 1; i <= 30; i++)
+            for (int i = 1; i <= Constants.SampleDataCount; i++)
             {
                 var manufacturerId = await InsertManufacturerAsync(
                     connection,
@@ -34,7 +30,7 @@ namespace ADO.Net
                 );
             }
         }
-
+        // Добавляет производителя в базу данных
         private async Task<int> InsertManufacturerAsync(
             SqlConnection connection,
             string name,
@@ -49,7 +45,7 @@ namespace ADO.Net
             var result = await command.ExecuteScalarAsync();
             return result != null ? (int)result : 0;
         }
-
+        // Добавляет самолет в базу данных
         private async Task InsertPlaneAsync(
             SqlConnection connection,
             string serial,

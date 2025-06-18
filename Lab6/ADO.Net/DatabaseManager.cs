@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Data.SqlClient;
+﻿using System.Data.SqlClient;
 
 namespace ADO.Net
 {
+    // Управляет инициализацией базы данных
     public class DatabaseManager
     {
+        // Создает БД и таблицы при необходимости
+        // 1. Проверяет существование БД
+        // 2. Создает БД при отсутствии
+        // 3. Создает необходимые таблицы
         public void InitializeDatabase()
         {
-            // Проверка существования базы данных
             using (var connection = new SqlConnection(Constants.MasterConnectionString))
             {
                 connection.Open();
@@ -38,6 +37,7 @@ namespace ADO.Net
             }
         }
 
+        // Вспомогательный метод для выполнения SQL-команд без возврата результатов.
         private void ExecuteNonQuery(SqlConnection connection, string commandText)
         {
             using var command = new SqlCommand(commandText, connection);

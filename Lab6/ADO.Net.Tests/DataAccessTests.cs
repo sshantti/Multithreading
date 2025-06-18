@@ -7,7 +7,7 @@ namespace ADO.Net.Tests
 {
     public class DataAccessTests : DatabaseTestsBase, IAsyncLifetime
     {
-        private readonly DataAccess _dataAccess = new DataAccess();
+        private readonly DataAccess _dataAccess = new();
 
         public new async Task InitializeAsync()
         {

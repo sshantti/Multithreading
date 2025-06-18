@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-
-namespace ADO.Net
+﻿namespace ADO.Net
 {
     class Program
     {
@@ -62,7 +58,7 @@ namespace ADO.Net
                 }
             }
         }
-
+        // Заполняет базу тестовыми данными.
         private static async Task PopulateSampleDataAsync()
         {
             Console.WriteLine("Adding 30 manufacturers and planes...");
@@ -70,6 +66,7 @@ namespace ADO.Net
             Console.WriteLine("Data added successfully!");
         }
 
+        // Добавляет нового производителя через пользовательский ввод.
         private static async Task AddManufacturerAsync()
         {
             Console.Write("Enter manufacturer name: ");
@@ -85,6 +82,7 @@ namespace ADO.Net
             Console.WriteLine("Manufacturer added successfully!");
         }
 
+        // Добавляет новый самолет через пользовательский ввод.
         private static async Task AddPlaneAsync()
         {
             var manufacturers = await dataAccess.GetAllManufacturersAsync();
@@ -122,10 +120,11 @@ namespace ADO.Net
             Console.WriteLine("Plane added successfully!");
         }
 
+        // Получает и отображает самолеты по названию производителя.
         private static async Task GetPlanesByManufacturerAsync()
         {
             Console.Write("Enter manufacturer name: ");
-            var name = Console.ReadLine();
+            var name = Console.ReadLine() ?? string.Empty;
 
             var planes = await dataAccess.GetPlanesByManufacturerAsync(name);
 
@@ -136,6 +135,7 @@ namespace ADO.Net
             }
         }
 
+        // Отображает всех производителей в системе.
         private static async Task ListManufacturersAsync()
         {
             var manufacturers = await dataAccess.GetAllManufacturersAsync();

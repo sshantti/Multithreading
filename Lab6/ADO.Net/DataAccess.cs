@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Collections.Generic;
-using System.Data.SqlClient;
-using System.Threading.Tasks;
+﻿using System.Data.SqlClient;
 
 namespace ADO.Net
 {
+    // Предоставляет методы для работы с данными.
     public class DataAccess
     {
+        // Добавляет нового производителя в систему.
         public async Task AddManufacturerAsync(string name, string address, bool isChild)
         {
             using var connection = new SqlConnection(Constants.ConnectionString);
@@ -22,7 +17,7 @@ namespace ADO.Net
             command.Parameters.AddWithValue("@isChild", isChild);
             await command.ExecuteScalarAsync();
         }
-
+        // Добавляет новый самолет в систему
         public async Task AddPlaneAsync(
             string serial,
             string model,
@@ -42,6 +37,7 @@ namespace ADO.Net
             await command.ExecuteNonQueryAsync();
         }
 
+        // Получает все самолеты указанного производителя.
         public async Task<IEnumerable<Plane>> GetPlanesByManufacturerAsync(string manufacturerName)
         {
             var planes = new List<Plane>();
@@ -66,6 +62,7 @@ namespace ADO.Net
             return planes;
         }
 
+        // Получает всех производителей из системы.
         public async Task<IEnumerable<Manufacturer>> GetAllManufacturersAsync()
         {
             var manufacturers = new List<Manufacturer>();

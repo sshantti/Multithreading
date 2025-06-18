@@ -1,7 +1,10 @@
 ﻿namespace ADO.Net
 {
+    // Содержит константы для работы с базой данных
     public static class Constants
     {
+        public const int SampleDataCount = 30;
+
         // Настройки подключения
         public const string MasterConnectionString = "Server=(localdb)\\mssqllocaldb;Integrated Security=true;";
         public static string DbName { get; set; } = "AircraftDb";
