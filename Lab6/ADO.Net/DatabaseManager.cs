@@ -5,43 +5,47 @@ namespace ADO.Net
     // Управляет инициализацией базы данных
     public class DatabaseManager
     {
+        public Func<string, SqlConnection> CreateConnection { get; set; } = 
+            connectionString => new SqlConnection(connectionString);
+        
+        public Func<SqlConnection, string, SqlCommand> CreateCommand { get; set; } = 
+            (conn, sql) => new SqlCommand(sql, conn);
+        
+        public Action<SqlCommand> ExecuteNonQuery { get; set; } = 
+            cmd => cmd.ExecuteNonQuery();
+
         // Создает БД и таблицы при необходимости
         // 1. Проверяет существование БД
         // 2. Создает БД при отсутствии
         // 3. Создает необходимые таблицы
         public void InitializeDatabase()
         {
-            using (var connection = new SqlConnection(Constants.MasterConnectionString))
+            using (var connection = CreateConnection(Constants.MasterConnectionString))
             {
                 connection.Open();
-                var cmdCheck = new SqlCommand(
-                    string.Format(Constants.CheckDbExists, Constants.DbName),
-                    connection);
-
+                var cmdCheck = CreateCommand(connection, string.Format(Constants.CheckDbExists, Constants.DbName));
+                
                 var dbId = cmdCheck.ExecuteScalar();
                 if (dbId == null)
                 {
-                    var cmdCreate = new SqlCommand(
-                        string.Format(Constants.CreateDatabase, Constants.DbName),
-                        connection);
-                    cmdCreate.ExecuteNonQuery();
+                    var cmdCreate = CreateCommand(connection, string.Format(Constants.CreateDatabase, Constants.DbName));
+                    ExecuteNonQuery(cmdCreate);
                 }
             }
-
             // Создание таблиц
-            using (var connection = new SqlConnection(Constants.ConnectionString))
+            using (var connection = CreateConnection(Constants.ConnectionString))
             {
                 connection.Open();
-                ExecuteNonQuery(connection, Constants.CreateManufacturersTable);
-                ExecuteNonQuery(connection, Constants.CreatePlanesTable);
+                ExecuteTableCreation(connection, Constants.CreateManufacturersTable);
+                ExecuteTableCreation(connection, Constants.CreatePlanesTable);
             }
         }
 
-        // Вспомогательный метод для выполнения SQL-команд без возврата результатов.
-        private void ExecuteNonQuery(SqlConnection connection, string commandText)
+        // Вспомогательный метод для выполнения SQL-команд.
+        private void ExecuteTableCreation(SqlConnection connection, string commandText)
         {
-            using var command = new SqlCommand(commandText, connection);
-            command.ExecuteNonQuery();
+            var command = CreateCommand(connection, commandText);
+            ExecuteNonQuery(command);
         }
     }
 }

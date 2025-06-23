@@ -32,6 +32,8 @@
         public const string CreateDatabase = "CREATE DATABASE {0}";
         public const string CheckDbExists = "SELECT database_id FROM sys.databases WHERE name = '{0}'";
 
+        // - Названия таблиц и полей
+        // - SQL-запросы для создания объектов БД
         public const string CreateManufacturersTable = $@"
         IF NOT EXISTS (SELECT * FROM sys.tables WHERE name = '{ManufacturersTable}')
         BEGIN

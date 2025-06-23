@@ -5,30 +5,31 @@ namespace ADO.Net
     // Предоставляет методы для работы с данными.
     public class DataAccess
     {
-        // Добавляет нового производителя в систему.
+        public Func<SqlConnection> CreateConnection { get; set; } =
+            () => new SqlConnection(Constants.ConnectionString);
+
+        public Func<SqlConnection, string, SqlCommand> CreateCommand { get; set; } =
+            (conn, sql) => new SqlCommand(sql, conn);
+
+        // Добавляет нового производителя в БД  
         public async Task AddManufacturerAsync(string name, string address, bool isChild)
         {
-            using var connection = new SqlConnection(Constants.ConnectionString);
+            using var connection = CreateConnection();
             await connection.OpenAsync();
 
-            using var command = new SqlCommand(Constants.InsertManufacturer, connection);
+            using var command = CreateCommand(connection, Constants.InsertManufacturer);
             command.Parameters.AddWithValue("@name", name);
             command.Parameters.AddWithValue("@address", address);
             command.Parameters.AddWithValue("@isChild", isChild);
             await command.ExecuteScalarAsync();
         }
-        // Добавляет новый самолет в систему
-        public async Task AddPlaneAsync(
-            string serial,
-            string model,
-            string code,
-            EngineType engine,
-            int manufacturerId)
+        // Добавляет новый самолет в БД
+        public async Task AddPlaneAsync(string serial, string model, string code, EngineType engine, int manufacturerId)
         {
-            using var connection = new SqlConnection(Constants.ConnectionString);
+            using var connection = CreateConnection();
             await connection.OpenAsync();
 
-            using var command = new SqlCommand(Constants.InsertPlane, connection);
+            using var command = CreateCommand(connection, Constants.InsertPlane);
             command.Parameters.AddWithValue("@serial", serial);
             command.Parameters.AddWithValue("@model", model);
             command.Parameters.AddWithValue("@code", code);
@@ -36,16 +37,15 @@ namespace ADO.Net
             command.Parameters.AddWithValue("@manufacturerId", manufacturerId);
             await command.ExecuteNonQueryAsync();
         }
-
         // Получает все самолеты указанного производителя.
         public async Task<IEnumerable<Plane>> GetPlanesByManufacturerAsync(string manufacturerName)
         {
             var planes = new List<Plane>();
 
-            using var connection = new SqlConnection(Constants.ConnectionString);
+            using var connection = CreateConnection();
             await connection.OpenAsync();
 
-            using var command = new SqlCommand(Constants.SelectPlanesByManufacturer, connection);
+            using var command = CreateCommand(connection, Constants.SelectPlanesByManufacturer);
             command.Parameters.AddWithValue("@name", manufacturerName);
 
             using var reader = await command.ExecuteReaderAsync();
@@ -61,16 +61,15 @@ namespace ADO.Net
 
             return planes;
         }
-
         // Получает всех производителей из системы.
         public async Task<IEnumerable<Manufacturer>> GetAllManufacturersAsync()
         {
             var manufacturers = new List<Manufacturer>();
 
-            using var connection = new SqlConnection(Constants.ConnectionString);
+            using var connection = CreateConnection();
             await connection.OpenAsync();
 
-            using var command = new SqlCommand(Constants.SelectAllManufacturers, connection);
+            using var command = CreateCommand(connection, Constants.SelectAllManufacturers);
             using var reader = await command.ExecuteReaderAsync();
 
             while (await reader.ReadAsync())

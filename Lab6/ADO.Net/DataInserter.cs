@@ -1,14 +1,21 @@
 ﻿using System.Data.SqlClient;
+using System.Threading.Tasks;
 
 namespace ADO.Net
 {
     // Заполняет базу данных тестовыми данными.
     public class DataInserter
     {
+        public Func<SqlConnection> CreateConnection { get; set; } =
+            () => new SqlConnection(Constants.ConnectionString);
+
+        public Func<SqlConnection, string, SqlCommand> CreateCommand { get; set; } =
+            (conn, sql) => new SqlCommand(sql, conn);
+
         // Асинхронно добавляет 30 производителей и 30 самолетов
         public async Task InsertDataAsync()
         {
-            using var connection = new SqlConnection(Constants.ConnectionString);
+            using var connection = CreateConnection();
             await connection.OpenAsync();
 
             for (int i = 1; i <= Constants.SampleDataCount; i++)
@@ -31,13 +38,9 @@ namespace ADO.Net
             }
         }
         // Добавляет производителя в базу данных
-        private async Task<int> InsertManufacturerAsync(
-            SqlConnection connection,
-            string name,
-            string address,
-            bool isChild)
+        private async Task<int> InsertManufacturerAsync(SqlConnection connection, string name, string address, bool isChild)
         {
-            using var command = new SqlCommand(Constants.InsertManufacturer, connection);
+            using var command = CreateCommand(connection, Constants.InsertManufacturer);
             command.Parameters.AddWithValue("@name", name);
             command.Parameters.AddWithValue("@address", address);
             command.Parameters.AddWithValue("@isChild", isChild);
@@ -46,15 +49,9 @@ namespace ADO.Net
             return result != null ? (int)result : 0;
         }
         // Добавляет самолет в базу данных
-        private async Task InsertPlaneAsync(
-            SqlConnection connection,
-            string serial,
-            string model,
-            string code,
-            EngineType engine,
-            int manufacturerId)
+        private async Task InsertPlaneAsync(SqlConnection connection, string serial, string model, string code, EngineType engine, int manufacturerId)
         {
-            using var command = new SqlCommand(Constants.InsertPlane, connection);
+            using var command = CreateCommand(connection, Constants.InsertPlane);
             command.Parameters.AddWithValue("@serial", serial);
             command.Parameters.AddWithValue("@model", model);
             command.Parameters.AddWithValue("@code", code);

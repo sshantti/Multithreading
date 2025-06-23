@@ -2,9 +2,9 @@
 {
     class Program
     {
-        private static readonly DatabaseManager dbManager = new DatabaseManager();
-        private static readonly DataInserter dataInserter = new DataInserter();
-        private static readonly DataAccess dataAccess = new DataAccess();
+        private static readonly DatabaseManager dbManager = new();
+        private static readonly DataInserter dataInserter = new();
+        private static readonly DataAccess dataAccess = new();
 
         static async Task Main(string[] args)
         {
