@@ -4,6 +4,7 @@ namespace EF_pr7
 {
     public static class DataInitializer
     {
+        public const int SampleDataCount = 30;
         // Инициализатор базы данных с тестовыми данными
         public static void Initialize(AirplaneContext context)
         {
@@ -15,7 +16,7 @@ namespace EF_pr7
             var random = new Random();
 
             // Генерация 30 производителей
-            for (int i = 1; i <= 30; i++)
+            for (int i = 1; i <= SampleDataCount; i++)
             {
                 manufacturers.Add(new Manufacturer
                 {
@@ -28,7 +29,7 @@ namespace EF_pr7
             context.SaveChanges();
 
             // Генерация 30 самолётов
-            for (int i = 1; i <= 30; i++)
+            for (int i = 1; i <= SampleDataCount; i++)
             {
                 planes.Add(new Plane
                 {
