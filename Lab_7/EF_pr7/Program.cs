@@ -1,208 +1,385 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Linq;
-using ClassLibrary;
 
 namespace EF_pr7
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            // Настройка DI контейнера
-            var services = new ServiceCollection();
-            services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=PlaneDB;Trusted_Connection=True;TrustServerCertificate=True;"));
+            // Настройка DI-контейнера
+            var serviceProvider = new ServiceCollection()
+                .AddDbContext<AirplaneContext>(options =>
+                    options.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=AirplaneDb;Trusted_Connection=True;"))
+                .AddScoped<Repository<Manufacturer>>()
+                .AddScoped<Repository<Plane>>()
+                .AddScoped<BusinessService>()
+                .BuildServiceProvider();
 
-            services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
-            services.AddScoped<BusinessService>();
-
-            var provider = services.BuildServiceProvider();
-
-            // Инициализация базы
-            using (var scope = provider.CreateScope())
+            using (var scope = serviceProvider.CreateScope())
             {
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var context = scope.ServiceProvider.GetRequiredService<AirplaneContext>();
+                // Инициализация БД с тестовыми данными
                 DataInitializer.Initialize(context);
-            }
+                // Получение сервисов
+                var manufacturerRepo = scope.ServiceProvider.GetRequiredService<Repository<Manufacturer>>();
+                var planeRepo = scope.ServiceProvider.GetRequiredService<Repository<Plane>>();
+                var businessService = scope.ServiceProvider.GetRequiredService<BusinessService>();
 
-            // Главное меню
-            while (true)
-            {
-                Console.Clear();
-                Console.WriteLine("1. CRUD for Manufacturers");
-                Console.WriteLine("2. CRUD for Planes");
-                Console.WriteLine("3. Add new Plane for new Manufacturer");
-                Console.WriteLine("4. Get Planes by Manufacturer");
-                Console.WriteLine("5. Exit");
-
-                switch (Console.ReadLine())
+                while (true)
                 {
-                    case "1": ShowManufacturerMenu(provider); break;
-                    case "2": ShowPlaneMenu(provider); break;
-                    case "3": AddNewPlaneForNewManufacturer(provider); break;
-                    case "4": GetPlanesByManufacturer(provider); break;
-                    case "5": return;
+                    // Главное меню
+                    Console.Clear();
+                    Console.WriteLine("1. CRUD for Manufacturers");
+                    Console.WriteLine("2. CRUD for Planes");
+                    Console.WriteLine("3. Add Plane with New Manufacturer");
+                    Console.WriteLine("4. Get Planes by Manufacturer ID");
+                    Console.WriteLine("5. Exit");
+                    Console.Write("Select an option: ");
+                    // Обработка выбора пользователя    
+                    var choice = Console.ReadLine();
+                    switch (choice)
+                    {
+                        case "1":
+                            await CrudManufacturerMenu(manufacturerRepo);
+                            break;
+                        case "2":
+                            await CrudPlaneMenu(planeRepo);
+                            break;
+                        case "3":
+                            await AddPlaneWithManufacturerMenu(businessService);
+                            break;
+                        case "4":
+                            await GetPlanesByManufacturerMenu(businessService);
+                            break;
+                        case "5":
+                            return;
+                    }
                 }
             }
         }
 
-        static void ShowManufacturerMenu(IServiceProvider provider)
+        static async Task CrudManufacturerMenu(Repository<Manufacturer> repo)
         {
-            using var scope = provider.CreateScope();
-            var repo = scope.ServiceProvider.GetRequiredService<IRepository<Manufacturer>>();
+            Console.Clear();
+            Console.WriteLine("Manufacturer CRUD Operations");
+            Console.WriteLine("1. Add Manufacturer");
+            Console.WriteLine("2. Get Manufacturer by ID");
+            Console.WriteLine("3. List All Manufacturers");
+            Console.WriteLine("4. Update Manufacturer");
+            Console.WriteLine("5. Delete Manufacturer");
+            Console.Write("Select an option: ");
 
-            while (true)
+            var choice = Console.ReadLine();
+            switch (choice)
             {
-                Console.Clear();
-                Console.WriteLine("Manufacturers:\n1.List\n2.Add\n3.Update\n4.Delete\n5.Back");
-                switch (Console.ReadLine())
-                {
-                    case "1":
-                        foreach (var m in repo.GetAll())
-                            Console.WriteLine($"{m.Id}: {m.Name}");
-                        break;
-                    case "2":
-                        repo.Add(new Manufacturer
-                        {
-                            Name = Read("Name"),
-                            Address = Read("Address"),
-                            IsAChildCompany = bool.Parse(Read("Is Child Company (true/false)"))
-                        });
-                        repo.Save();
-                        break;
-                    case "3":
-                        Console.Write("Enter ID to update: ");
-                        int id = int.Parse(Console.ReadLine());
-                        var entity = repo.GetById(id);
-                        if (entity != null)
-                        {
-                            entity.Name = Read($"Name ({entity.Name}): ") ?? entity.Name;
-                            entity.Address = Read($"Address ({entity.Address}): ") ?? entity.Address;
-                            entity.IsAChildCompany = bool.Parse(Read($"Is Child ({entity.IsAChildCompany}): "));
-                            repo.Update(entity);
-                            repo.Save();
-                        }
-                        break;
-                    case "4":
-                        Console.Write("Enter ID to delete: ");
-                        repo.Delete(int.Parse(Console.ReadLine()));
-                        repo.Save();
-                        break;
-                    case "5": return;
-                }
-                Console.ReadKey();
-            }
-        }
+                case "1":
+                    Console.Write("Name: ");
+                    var name = Console.ReadLine() ?? string.Empty;
+                    Console.Write("Address: ");
+                    var address = Console.ReadLine() ?? string.Empty;
 
-        static void ShowPlaneMenu(IServiceProvider provider)
-        {
-            using var scope = provider.CreateScope();
-            var repo = scope.ServiceProvider.GetRequiredService<IRepository<Plane>>();
-            var manRepo = scope.ServiceProvider.GetRequiredService<IRepository<Manufacturer>>();
+                    bool isChild = false;
+                    Console.Write("Is child company (true/false): ");
+                    if (bool.TryParse(Console.ReadLine(), out bool parsedBool))
+                    {
+                        isChild = parsedBool;
+                    }
 
-            while (true)
-            {
-                Console.Clear();
-                Console.WriteLine("Planes:\n1.List\n2.Add\n3.Update\n4.Delete\n5.Back");
-                switch (Console.ReadLine())
-                {
-                    case "1":
-                        foreach (var p in repo.GetAll())
-                            Console.WriteLine($"{p.Id}: {p.Model} [{p.SerialNumber}]");
-                        break;
-                    case "2":
-                        var plane = new Plane
-                        {
-                            SerialNumber = Read("Serial Number"),
-                            Model = Read("Model"),
-                            PlaneCode = Read("Plane Code"),
-                            EngineType = Enum.Parse<EngineType>(Read("Engine Type (0-Electrical,1-Nuclear,2-Steam)")),
-                            ManufacturerId = int.Parse(Read("Manufacturer ID"))
-                        };
+                    await repo.AddAsync(new Manufacturer
+                    {
+                        Name = name,
+                        Address = address,
+                        IsAChildCompany = isChild
+                    });
+                    await repo.SaveAsync();
+                    break;
 
-                        if (manRepo.GetById(plane.ManufacturerId) != null)
+                case "2":
+                    Console.Write("Enter ID: ");
+                    if (int.TryParse(Console.ReadLine(), out int id))
+                    {
+                        var manufacturer = await repo.GetAsync(id);
+                        if (manufacturer != null)
                         {
-                            repo.Add(plane);
-                            repo.Save();
+                            Console.WriteLine($"ID: {manufacturer.Id}, Name: {manufacturer.Name}");
                         }
                         else
                         {
-                            Console.WriteLine("Manufacturer not found!");
+                            Console.WriteLine("Not found");
                         }
-                        break;
-                    case "3":
-                        Console.Write("Enter ID to update: ");
-                        int id = int.Parse(Console.ReadLine());
-                        var entity = repo.GetById(id);
-                        if (entity != null)
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid ID format");
+                    }
+                    Console.ReadKey();
+                    break;
+
+                case "3":
+                    var manufacturers = await repo.GetAllAsync();
+                    foreach (var m in manufacturers)
+                    {
+                        Console.WriteLine($"ID: {m.Id}, Name: {m.Name}");
+                    }
+                    Console.ReadKey();
+                    break;
+
+                case "4":
+                    Console.Write("Enter ID to update: ");
+                    if (int.TryParse(Console.ReadLine(), out int updateId))
+                    {
+                        var toUpdate = await repo.GetAsync(updateId);
+                        if (toUpdate != null)
                         {
-                            entity.SerialNumber = Read($"Serial ({entity.SerialNumber}): ") ?? entity.SerialNumber;
-                            entity.Model = Read($"Model ({entity.Model}): ") ?? entity.Model;
-                            entity.PlaneCode = Read($"Code ({entity.PlaneCode}): ") ?? entity.PlaneCode;
-                            entity.EngineType = Enum.Parse<EngineType>(Read($"Engine ({entity.EngineType}): "));
-                            entity.ManufacturerId = int.Parse(Read($"Manufacturer ID ({entity.ManufacturerId}): "));
-                            repo.Update(entity);
-                            repo.Save();
+                            Console.Write("New Name: ");
+                            var newName = Console.ReadLine();
+                            if (!string.IsNullOrWhiteSpace(newName))
+                            {
+                                toUpdate.Name = newName;
+                            }
+                            repo.Update(toUpdate);
+                            await repo.SaveAsync();
                         }
-                        break;
-                    case "4":
-                        Console.Write("Enter ID to delete: ");
-                        repo.Delete(int.Parse(Console.ReadLine()));
-                        repo.Save();
-                        break;
-                    case "5": return;
-                }
-                Console.ReadKey();
+                        else
+                        {
+                            Console.WriteLine("Not found");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid ID format");
+                    }
+                    break;
+
+                case "5":
+                    Console.Write("Enter ID to delete: ");
+                    if (int.TryParse(Console.ReadLine(), out int deleteId))
+                    {
+                        var toDelete = await repo.GetAsync(deleteId);
+                        if (toDelete != null)
+                        {
+                            repo.Delete(toDelete);
+                            await repo.SaveAsync();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Not found");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid ID format");
+                    }
+                    break;
             }
         }
 
-        static void AddNewPlaneForNewManufacturer(IServiceProvider provider)
+        static async Task CrudPlaneMenu(Repository<Plane> repo)
         {
-            using var scope = provider.CreateScope();
-            var service = scope.ServiceProvider.GetRequiredService<BusinessService>();
+            Console.Clear();
+            Console.WriteLine("Plane CRUD Operations");
+            Console.WriteLine("1. Add Plane");
+            Console.WriteLine("2. Get Plane by ID");
+            Console.WriteLine("3. List All Planes");
+            Console.WriteLine("4. Update Plane");
+            Console.WriteLine("5. Delete Plane");
+            Console.Write("Select an option: ");
 
-            var manufacturer = new Manufacturer
+            var choice = Console.ReadLine();
+            switch (choice)
             {
-                Name = Read("Manufacturer Name"),
-                Address = Read("Address"),
-                IsAChildCompany = bool.Parse(Read("Is Child Company (true/false)"))
-            };
+                case "1":
+                    Console.Write("Serial Number: ");
+                    var sn = Console.ReadLine() ?? string.Empty;
+                    Console.Write("Model: ");
+                    var model = Console.ReadLine() ?? string.Empty;
+                    Console.Write("Plane Code: ");
+                    var code = Console.ReadLine() ?? string.Empty;
 
-            var plane = new Plane
+                    EngineType engineType = EngineType.Electrical;
+                    Console.Write("Engine Type (0-Electrical, 1-Nuclear, 2-Steam): ");
+                    if (Enum.TryParse(Console.ReadLine(), out EngineType parsedEngine) &&
+                        Enum.IsDefined(typeof(EngineType), parsedEngine))
+                    {
+                        engineType = parsedEngine;
+                    }
+
+                    Console.Write("Manufacturer ID: ");
+                    if (int.TryParse(Console.ReadLine(), out int manufacturerId))
+                    {
+                        await repo.AddAsync(new Plane
+                        {
+                            SerialNumber = sn,
+                            Model = model,
+                            PlaneCode = code,
+                            EngineType = engineType,
+                            ManufacturerId = manufacturerId
+                        });
+                        await repo.SaveAsync();
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid Manufacturer ID");
+                    }
+                    break;
+
+                case "2":
+                    Console.Write("Enter ID: ");
+                    if (int.TryParse(Console.ReadLine(), out int id))
+                    {
+                        var plane = await repo.GetAsync(id);
+                        if (plane != null)
+                        {
+                            Console.WriteLine($"ID: {plane.Id}, Model: {plane.Model}");
+                        }
+                        else
+                        {
+                            Console.WriteLine("Not found");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid ID format");
+                    }
+                    Console.ReadKey();
+                    break;
+
+                case "3":
+                    var planes = await repo.GetAllAsync();
+                    foreach (var p in planes)
+                    {
+                        Console.WriteLine($"ID: {p.Id}, Model: {p.Model}");
+                    }
+                    Console.ReadKey();
+                    break;
+
+                case "4":
+                    Console.Write("Enter ID to update: ");
+                    if (int.TryParse(Console.ReadLine(), out int updateId))
+                    {
+                        var toUpdate = await repo.GetAsync(updateId);
+                        if (toUpdate != null)
+                        {
+                            Console.Write("New Model: ");
+                            var newModel = Console.ReadLine();
+                            if (!string.IsNullOrWhiteSpace(newModel))
+                            {
+                                toUpdate.Model = newModel;
+                            }
+                            repo.Update(toUpdate);
+                            await repo.SaveAsync();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Not found");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid ID format");
+                    }
+                    break;
+
+                case "5":
+                    Console.Write("Enter ID to delete: ");
+                    if (int.TryParse(Console.ReadLine(), out int deleteId))
+                    {
+                        var toDelete = await repo.GetAsync(deleteId);
+                        if (toDelete != null)
+                        {
+                            repo.Delete(toDelete);
+                            await repo.SaveAsync();
+                        }
+                        else
+                        {
+                            Console.WriteLine("Not found");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid ID format");
+                    }
+                    break;
+            }
+        }
+        // Добавление самолета с новым производителем
+        static async Task AddPlaneWithManufacturerMenu(BusinessService service)
+        {
+            Console.Clear();
+            Console.WriteLine("Add New Plane with New Manufacturer");
+
+            Console.Write("Manufacturer Name: ");
+            var name = Console.ReadLine() ?? string.Empty;
+            Console.Write("Manufacturer Address: ");
+            var address = Console.ReadLine() ?? string.Empty;
+
+            bool isChild = false;
+            Console.Write("Is child company (true/false): ");
+            if (bool.TryParse(Console.ReadLine(), out bool parsedBool))
             {
-                SerialNumber = Read("Serial Number"),
-                Model = Read("Model"),
-                PlaneCode = Read("Plane Code"),
-                EngineType = Enum.Parse<EngineType>(Read("Engine Type (0-Electrical,1-Nuclear,2-Steam)"))
-            };
+                isChild = parsedBool;
+            }
 
-            Console.WriteLine(service.AddNewPlaneForNewManufacturer(manufacturer, plane)
-                ? "Success!" : "Transaction failed!");
-            Console.ReadKey();
+            Console.Write("Plane Serial Number: ");
+            var sn = Console.ReadLine() ?? string.Empty;
+            Console.Write("Plane Model: ");
+            var model = Console.ReadLine() ?? string.Empty;
+            Console.Write("Plane Code: ");
+            var code = Console.ReadLine() ?? string.Empty;
+
+            EngineType engineType = EngineType.Electrical;
+            Console.Write("Engine Type (0-Electrical, 1-Nuclear, 2-Steam): ");
+            if (Enum.TryParse(Console.ReadLine(), out EngineType parsedEngine) &&
+                Enum.IsDefined(typeof(EngineType), parsedEngine))
+            {
+                engineType = parsedEngine;
+            }
+
+            await service.AddPlaneWithManufacturerAsync(
+                new Plane
+                {
+                    SerialNumber = sn,
+                    Model = model,
+                    PlaneCode = code,
+                    EngineType = engineType
+                },
+                new Manufacturer
+                {
+                    Name = name,
+                    Address = address,
+                    IsAChildCompany = isChild
+                }
+            );
         }
-
-        static void GetPlanesByManufacturer(IServiceProvider provider)
+        // Получение самолетов производителя
+        static async Task GetPlanesByManufacturerMenu(BusinessService service)
         {
-            using var scope = provider.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            Console.Clear();
+            Console.Write("Enter Manufacturer ID: ");
+            if (int.TryParse(Console.ReadLine(), out int manufacturerId))
+            {
+                var planes = await service.GetPlanesByManufacturerIdAsync(manufacturerId);
 
-            var manufacturerId = int.Parse(Read("Manufacturer ID"));
-            var planes = context.Planes
-                .Where(p => p.ManufacturerId == manufacturerId)
-                .ToList();
-
-            Console.WriteLine($"Planes for manufacturer {manufacturerId}:");
-            foreach (var p in planes)
-                Console.WriteLine($"  {p.Model} - {p.SerialNumber}");
+                if (planes.Any())
+                {
+                    Console.WriteLine($"Planes for manufacturer ID {manufacturerId}:");
+                    foreach (var plane in planes)
+                    {
+                        Console.WriteLine($"- {plane.Model} ({plane.PlaneCode})");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("No planes found for this manufacturer");
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid Manufacturer ID format");
+            }
+            Console.WriteLine("\nPress any key to continue...");
             Console.ReadKey();
-        }
-
-        static string Read(string prompt)
-        {
-            Console.Write($"{prompt}: ");
-            return Console.ReadLine()!;
         }
     }
 }

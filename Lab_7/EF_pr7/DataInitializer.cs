@@ -1,42 +1,40 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using ClassLibrary;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace EF_pr7
 {
     public static class DataInitializer
     {
-        public static void Initialize(AppDbContext context)
+        // Инициализатор базы данных с тестовыми данными
+        public static void Initialize(AirplaneContext context)
         {
+            context.Database.EnsureDeleted();
             context.Database.EnsureCreated();
-            context.Database.Migrate();
 
-            if (context.Manufacturers.Any()) return;
-
-            var random = new Random();
             var manufacturers = new List<Manufacturer>();
+            var planes = new List<Plane>();
+            var random = new Random();
 
+            // Генерация 30 производителей
             for (int i = 1; i <= 30; i++)
             {
                 manufacturers.Add(new Manufacturer
                 {
                     Name = $"Manufacturer_{i}",
                     Address = $"Address_{i}",
-                    IsAChildCompany = (i % 4 == 0)
+                    IsAChildCompany = i % 3 == 0
                 });
             }
             context.Manufacturers.AddRange(manufacturers);
             context.SaveChanges();
 
-            var planes = new List<Plane>();
+            // Генерация 30 самолётов
             for (int i = 1; i <= 30; i++)
             {
                 planes.Add(new Plane
                 {
-                    SerialNumber = $"SN-{i}",
+                    SerialNumber = $"SN_{i}",
                     Model = $"Model_{i % 10}",
-                    PlaneCode = $"PC-{i}",
+                    PlaneCode = $"PC_{i}",
                     EngineType = (EngineType)(i % 3),
                     ManufacturerId = manufacturers[random.Next(manufacturers.Count)].Id
                 });

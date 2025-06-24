@@ -1,46 +1,44 @@
-﻿using ClassLibrary;
+﻿using Microsoft.EntityFrameworkCore;
 
 namespace EF_pr7
 {
     public class BusinessService
     {
-        private readonly AppDbContext _context;
-        private readonly IRepository<Manufacturer> _manufacturerRepo;
-        private readonly IRepository<Plane> _planeRepo;
+        private readonly AirplaneContext _context;
 
-        public BusinessService(
-            AppDbContext context,
-            IRepository<Manufacturer> manufacturerRepo,
-            IRepository<Plane> planeRepo)
+        // Сервис для бизнес-операций
+        public BusinessService(AirplaneContext context)
         {
             _context = context;
-            _manufacturerRepo = manufacturerRepo;
-            _planeRepo = planeRepo;
         }
-
-        public bool AddNewPlaneForNewManufacturer(
-            Manufacturer manufacturer,
-            Plane plane)
+        // Добавляет новый самолет и нового производителя
+        public async Task AddPlaneWithManufacturerAsync(Plane plane, Manufacturer manufacturer)
         {
-            using var transaction = _context.Database.BeginTransaction();
-
+            using var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                _manufacturerRepo.Add(manufacturer);
-                _manufacturerRepo.Save();
-
+                // Добавление производителя
+                _context.Manufacturers.Add(manufacturer);
+                await _context.SaveChangesAsync();
+                // Привязка самолета к производителю
                 plane.ManufacturerId = manufacturer.Id;
-                _planeRepo.Add(plane);
-                _planeRepo.Save();
+                _context.Planes.Add(plane);
+                await _context.SaveChangesAsync();
 
-                transaction.Commit();
-                return true;
+                await transaction.CommitAsync();
             }
             catch
             {
-                transaction.Rollback();
-                return false;
+                await transaction.RollbackAsync();
+                throw;
             }
+        }
+        // Получает все самолеты указанного производителя
+        public async Task<IEnumerable<Plane>> GetPlanesByManufacturerIdAsync(int manufacturerId)
+        {
+            return await _context.Planes
+                .Where(p => p.ManufacturerId == manufacturerId)
+                .ToListAsync();
         }
     }
 }
